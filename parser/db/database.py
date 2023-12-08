@@ -1,17 +1,33 @@
 import os
-from dotenv import load_dotenv
 from peewee import *
+from db.config import DBConfig
+from db.model import *
 
-if not os.environ.get('DOCKER', 0):
-    load_dotenv('./.env.local')
 
-if os.environ.get('DATABASE', 'sqlite') == 'postgres':
-    db = PostgresqlDatabase(os.environ.get('SQL_DATABASE', 'market_matcher_dev'),
-                            user=os.environ.get('SQL_USER', 'postgres'),
-                            password=os.environ.get(
-                                'SQL_PASSWORD', 'postgres'),
-                            host=os.environ.get('SQL_HOST', 'postgres'),
-                            port=os.environ.get('SQL_PORT', 'postgres'),
-                            )
-else:
-    db = SqliteDatabase(os.environ.get('SQL_DATABASE')+'.db')
+def createDriver(dbconfig: DBConfig) -> Database:
+    match dbconfig.driver.lower():
+        case "postgres":
+            return PostgresqlDatabase(database=dbconfig.dbname, user=dbconfig.user,
+                                      password=dbconfig.pwd, host=dbconfig.host,
+                                      port=dbconfig.port)
+        case "sqlite":
+            return SqliteDatabase(dbconfig.dbname+'.db')
+
+
+class Db:
+    def __init__(self, database: Database) -> None:
+        self.pool = database
+
+    def connect(self):
+        self.pool.connect()
+
+        self.pool.bind([Store, Product])
+
+        self.pool.create_tables([Store, Product])
+
+        self._add_stores()
+
+    def _add_stores(self):
+        Store.get_or_create(name='Ашан', code='ashan', id=1)
+        Store.get_or_create(name='Магнит', code='magnit', id=2)
+        Store.get_or_create(name='Перекресток', code='perekrestok', id=3)

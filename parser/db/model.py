@@ -1,16 +1,12 @@
 from peewee import Model, TextField, FloatField, CharField, ForeignKeyField
-from db.database import db
-
-class BaseModel(Model):
-    class Meta:
-        database = db
 
 
-class Store(BaseModel):
+class Store(Model):
     name = CharField()
     code = CharField()
 
-class Product(BaseModel):
+
+class Product(Model):
     product_id = TextField(unique=True)
     store_id = ForeignKeyField(Store, backref='products')
     name = TextField()
@@ -18,6 +14,3 @@ class Product(BaseModel):
     category = CharField()
     category_code = CharField()
     price = FloatField()
-
-
-

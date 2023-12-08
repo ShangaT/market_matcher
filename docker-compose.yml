@@ -1,4 +1,5 @@
 version: '3.7'
+
 services:
   web:
     build: ./app
@@ -16,8 +17,6 @@ services:
     command: python main.py
     ports:
       - 9000:9000
-    env_file:
-      - ./parser/.env.dev
     depends_on:
       - db
   db:
@@ -28,5 +27,6 @@ services:
       - POSTGRES_USER=market_matcher
       - POSTGRES_PASSWORD=market_matcher
       - POSTGRES_DB=market_matcher_dev
+      
 volumes:
   postgres_data:
