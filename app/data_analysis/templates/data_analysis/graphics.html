@@ -1,0 +1,26 @@
+{% load static %}
+
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Графики</title>
+</head>
+
+<body>
+
+    <p class="image">
+        <img src="{% static 'data_analysis/img/top_10.png' %}" alt="top_10_max" > <br>
+        <img src="{% static 'data_analysis/img/top_10_min.png' %}" alt="top_10_min" >
+        <img src="{% static 'data_analysis/img/pivot_table_mean.png' %}" alt="pivot_table_mean" >
+        <img src="{% static 'data_analysis/img/pivot_table_mod.png' %}" alt="pivot_table_mod" >
+    </p>
+
+    <style>
+        .image {text-align: center;}
+    </style>
+
+</body>
+</html>
