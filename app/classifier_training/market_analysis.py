@@ -46,7 +46,7 @@ class Diagram():
         plt.ylabel('Наименование', fontsize=16)
         plt.tick_params(axis='x', labelsize=10)
         plt.tick_params(axis='y', labelsize=10)
-        chart_path = 'data_analysis/static/data_analysis/img/top_10.png'
+        chart_path = 'data_analysis/static/data_analysis/img/max.png'
         plt.savefig(chart_path,  bbox_inches = 'tight')        
         return chart_path
 
@@ -60,7 +60,7 @@ class Diagram():
         plt.ylabel('Наименование', fontsize=16)
         plt.tick_params(axis='x', labelsize=10)
         plt.tick_params(axis='y', labelsize=10)
-        chart_path = 'data_analysis/static/data_analysis/img/top_10_min.png'
+        chart_path = 'data_analysis/static/data_analysis/img/min.png'
         plt.savefig(chart_path,  bbox_inches = 'tight')        
         return chart_path
 
@@ -73,7 +73,7 @@ class Diagram():
         plt.ylabel('Категория', fontsize=16)
         plt.tick_params(axis='x', labelsize=12)
         plt.tick_params(axis='y', labelsize=12)
-        chart_path = 'data_analysis/static/data_analysis/img/pivot_table_mean.png'
+        chart_path = 'data_analysis/static/data_analysis/img/mean.png'
         plt.savefig(chart_path,  bbox_inches = 'tight')        
         return chart_path
 
@@ -86,7 +86,7 @@ class Diagram():
         plt.ylabel('Категория', fontsize=16)
         plt.tick_params(axis='x', labelsize=12)
         plt.tick_params(axis='y', labelsize=12)
-        chart_path = 'data_analysis/static/data_analysis/img/pivot_table_mod.png'
+        chart_path = 'data_analysis/static/data_analysis/img/mod.png'
         plt.savefig(chart_path,  bbox_inches = 'tight')        
         return chart_path
 

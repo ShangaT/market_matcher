@@ -26,29 +26,26 @@ def page_2(request):
     return HttpResponse("Выпечка и хлеб")
 
 def page_3(request):
-    return HttpResponse("Консервы, мед, варенье")
-
-def page_4(request):
     return HttpResponse("Молочные продукты")
 
-def page_5(request):
+def page_4(request):
     return HttpResponse("Мясные продукты")
 
-def page_6(request):
+def page_5(request):
     return HttpResponse("Напитки")
 
-def page_7(request):
+def page_6(request):
     return HttpResponse("Овощи, фрукты, закуски")
 
-def page_8(request):
+def page_7(request):
     return HttpResponse("Прочее")
 
-def page_9(request):
+def page_8(request):
     return HttpResponse("Рыба и морепродукты")
 
-def page_10(request):
+def page_9(request):
     return HttpResponse("Сладости")
 
-def page_11(request):
+def page_10(request):
     return HttpResponse("Чай, кофе, какао, сахар")
 

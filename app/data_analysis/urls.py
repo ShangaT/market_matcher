@@ -14,6 +14,5 @@ urlpatterns = [
     path("category_8", views.page_8, name='page_8'),
     path("category_9", views.page_9, name='page_9'),
     path("category_10", views.page_10, name='page_10'),
-    path("category_11", views.page_11, name='page_11'),
     path("visualization",  views.visualization, name='visualization'),
 ]
