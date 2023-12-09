@@ -3,7 +3,7 @@ import time
 from requests import Session
 import urllib.parse
 
-from db.model import Product
+from db.pw_model import Product
 
 
 whitelist_id = [113, 148, 100, 708, 187, 205, 242,

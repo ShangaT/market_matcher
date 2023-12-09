@@ -1,7 +1,7 @@
 import time
 from requests import Session
 
-from db.model import Product
+from db.pw_model import Product
 
 whitelist = ['voda-soki-napitki', 'chay-kofe-sladosti',
              'bakaleya', 'konditerskie_izdeliya', 'hlebnaya-vypechka', 'ryba-ikra-moreprodukty', 'zamorozhennye-produkty', 'orehi-suhofrukty-sneki', 'ovoschi-frukty-zelen-griby-yagody', 'kolbasnye-izdeliya', 'ptica-myaso', 'syry', 'moloko-syr-yayca', 'alkogol']

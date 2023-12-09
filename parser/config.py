@@ -5,8 +5,9 @@ from db.config import *
 
 
 class Config:
-    def __init__(self, docker=False, dbconfig: DBConfig = DBConfig()) -> None:
+    def __init__(self, docker=False, instastart=False, dbconfig: DBConfig = DBConfig()) -> None:
         self.docker = docker
+        self.instastart = instastart
         self.dbconfig = dbconfig
 
     def read_from_env(self):
@@ -16,6 +17,8 @@ class Config:
             load_dotenv('.env.dev')
         else:
             load_dotenv('.env.local')
+
+        self.instastart = bool(os.environ.get("START", 0)),
 
         self.dbconfig = DBConfig(
             driver=os.environ.get("DRIVER", DEFAULT_DRIVER),

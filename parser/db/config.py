@@ -1,8 +1,8 @@
 
-DEFAULT_DBNAME = "market_matcher"
+DEFAULT_DBNAME = "mm_dev"
 DEFAULT_DRIVER = "sqlite"
-DEFAULT_USER = "market_matcher"
-DEFAULT_PWD = "market_matcher"
+DEFAULT_USER = "postgres"
+DEFAULT_PWD = "postgres"
 DEFAULT_HOST = "localhost"
 DEFAULT_PORT = 5432
 
