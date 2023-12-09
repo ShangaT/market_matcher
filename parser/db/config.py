@@ -1,22 +1,19 @@
-from db.database import db
-from db.model import Store, Product
 
-def init():
-    db.connect()
-    db.create_tables([Store, Product])
-
-    add_stores()
-
-    return db
+DEFAULT_DBNAME = "mm_dev"
+DEFAULT_DRIVER = "sqlite"
+DEFAULT_USER = "postgres"
+DEFAULT_PWD = "postgres"
+DEFAULT_HOST = "localhost"
+DEFAULT_PORT = 5432
 
 
-def add_stores():
-
-    Store.get_or_create(name='Ашан', code='ashan', id=1)
-    Store.get_or_create(name='Магнит', code='magnit', id=2)
-    Store.get_or_create(name='Перекресток', code='perekrestok', id=3)
-
-    # if not Store.select().count() == 0:
-    #     Store.get_or_create(name='Ашан', code='ashan', id=1)
-    #     Store.get_or_create(name='Магнит', code='magnit', id=2)
-    #     Store.get_or_create(name='Ашан', code='ashan', id=3)
+class DBConfig:
+    def __init__(self, driver=DEFAULT_DBNAME, dbname=DEFAULT_DBNAME,
+                 user=DEFAULT_USER, pwd=DEFAULT_PWD, host=DEFAULT_HOST,
+                 port=DEFAULT_PORT) -> None:
+        self.driver = driver
+        self.dbname = dbname
+        self.user = user
+        self.pwd = pwd
+        self.host = host
+        self.port = port

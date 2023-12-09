@@ -80,9 +80,9 @@ WSGI_APPLICATION = 'market_matcher.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',   # Используется PostgreSQL
-        'NAME': 'market_matcher_dev', # Имя базы данных
-        'USER': 'market_matcher', # Имя пользователя
-        'PASSWORD': 'market_matcher', # Пароль пользователя
+        'NAME': 'mm_dev', # Имя базы данных
+        'USER': 'postgres', # Имя пользователя
+        'PASSWORD': 'postgres',  # Пароль пользователя
         'HOST': 'db', # Наименование контейнера для базы данных в Docker Compose
         'PORT': '5432',  # Порт базы данных
     }

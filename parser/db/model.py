@@ -1,23 +1,19 @@
-from peewee import Model, TextField, FloatField, CharField, ForeignKeyField
-from db.database import db
-
-class BaseModel(Model):
-    class Meta:
-        database = db
 
 
-class Store(BaseModel):
-    name = CharField()
-    code = CharField()
-
-class Product(BaseModel):
-    product_id = TextField(unique=True)
-    store_id = ForeignKeyField(Store, backref='products')
-    name = TextField()
-    code = TextField()
-    category = CharField()
-    category_code = CharField()
-    price = FloatField()
+class Store:
+    def __init__(self, name: str, code:str, id:int=None) -> None:
+        self.id = id
+        self.name = name
+        self.code = code
 
 
-
+class Product:
+    def __init__(self, product_id:int, store_id:int, name:str, code:str, category:str, category_code:str, price:float, id:int=None) -> None:
+        self.id = id
+        self.name = name
+        self.code = code
+        self.product_id = product_id
+        self.store_id = store_id
+        self.category = category
+        self.category_code = category_code
+        self.price = price

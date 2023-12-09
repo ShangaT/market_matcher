@@ -1,4 +1,5 @@
 import sqlite3, string, joblib
+from data_analysis.models import Product
 #from sqlalchemy import create_engine
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -11,14 +12,17 @@ def preprocess_text(input_string):
     clear_string = clear_string.lower()
     return clear_string
 
-def classification(data_base):
-    products = read_frame(data_base)
+def classification(database):
+
+    products = read_frame(database)
 
     products.drop_duplicates(inplace=True)
     products.dropna(inplace=True)
 
     with open('classifier_training/model.pkl', 'rb') as f:
         model = joblib.load(f)
+
+    print(products.columns)
 
     products['clear_category'] = products['category'].apply(preprocess_text)
     prediction = model.predict(products['clear_category'])
@@ -28,7 +32,8 @@ def classification(data_base):
     products.category_code = products.category_code.astype('category')
     products.general_category = products.general_category.astype('category')
 
-    conditions = [(products['store_id'] == 1), (products['store_id'] == 2), (products['store_id'] == 3)]
+    conditions = [(products['store__id'] == 1),
+                  (products['store__id'] == 2), (products['store__id'] == 3)]
     values = ['Ашан', 'Магнит', 'Перекресток']
     products['shop_rus'] = np.select(conditions, values)
 
@@ -90,8 +95,15 @@ class Diagram():
         plt.savefig(chart_path,  bbox_inches = 'tight')        
         return chart_path
 
+def get_products_queryset():
+    return Product.objects.values('id', 'store__id', 'product_id',
+                           'name', 'code', 'category', 'category_code', 'price')
+
 if __name__ == '__main__':
-    df = classification('prods.db')
+
+    products_qs = get_products_queryset()
+
+    df = classification(products_qs)
     top_max = Diagram.top_10_max(df)
     top_min = Diagram.top_10_min(df)
     mean = Diagram.pivot_table_mean(df)

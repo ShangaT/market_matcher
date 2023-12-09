@@ -1,17 +1,19 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from .models import Product
-from classifier_training.market_analysis import classification
-from classifier_training.market_analysis import Diagram
+from classifier_training.market_analysis import classification, Diagram, get_products_queryset
+
+from django.core.paginator import Paginator
+from django.shortcuts import render
 
 def index(request):
-    products = Product.objects.all()
+    products = get_products_queryset()
     categories = classification(products)['general_category'].cat.categories.tolist()
     contant = {"categories": categories}
     return render(request, 'data_analysis/index.html', contant)
 
 def visualization(request):
-    products = Product.objects.all()
+    products = get_products_queryset()
     df = classification(products)
     Diagram.top_10_max(df)
     Diagram.top_10_min(df)
@@ -48,4 +50,12 @@ def page_9(request):
 
 def page_10(request):
     return HttpResponse("Чай, кофе, какао, сахар")
+def page_11(request):
+    products = Product.objects.all()
+    paginator = Paginator(products, 25)  # Show 25 contacts per page.
+
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+    return render(request, "data_analysis/products_list.html", {"page_obj": page_obj})
+    # return HttpResponse("Чай, кофе, какао, сахар")
 
