@@ -19,7 +19,7 @@ def classification(database):
     products.drop_duplicates(inplace=True)
     products.dropna(inplace=True)
 
-    with open('classifier_training/model.pkl', 'rb') as f:
+    with open('classifier_training/model_category.pkl', 'rb') as f:
         model = joblib.load(f)
 
     print(products.columns)
@@ -33,11 +33,49 @@ def classification(database):
     products.general_category = products.general_category.astype('category')
 
     conditions = [(products['store__id'] == 1),
-                  (products['store__id'] == 2), (products['store__id'] == 3)]
+                  (products['store__id'] == 2), 
+                  (products['store__id'] == 3)]
     values = ['Ашан', 'Магнит', 'Перекресток']
     products['shop_rus'] = np.select(conditions, values)
 
     return products
+
+def join_by_names(database, category):
+    with open('classifier_training/model_name.pkl', 'rb') as f:
+        model = joblib.load(f)
+
+    products = read_frame(database)
+
+    products.drop_duplicates(inplace=True)
+    products.dropna(inplace=True)
+
+    products = products[products.general_category.isin([category])]
+
+    products['clear_name'] = products['name'].apply(preprocess_text)
+    products['general_name'] = model.predict(products['clear_name']) 
+
+    products.category = products.category.astype('category')
+    products.category_code = products.category_code.astype('category')
+    products.general_category = products.general_category.astype('category')
+
+    conditions = [(products['store__id'] == 1),
+                  (products['store__id'] == 2), 
+                  (products['store__id'] == 3)]
+    values = ['Ашан', 'Магнит', 'Перекресток']
+    products['shop_rus'] = np.select(conditions, values)
+
+    #TODO: сделать новую таблицу 
+    # должны быть поля: назавние продукта 
+    '''
+    Todo: переписать в новую таблицу, в которой будут поля:
+    Поля с ценой для каждого магазина
+    Поле с названием
+    Поле с обобщенной категорией
+    Код продукта
+    '''
+
+    return products
+
 
 class Diagram():
 
