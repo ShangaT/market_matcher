@@ -3,8 +3,8 @@ from requests import Session
 
 from db.pw_model import Product
 
-whitelist = ['voda-soki-napitki', 'chay-kofe-sladosti',
-             'bakaleya', 'konditerskie_izdeliya', 'hlebnaya-vypechka', 'ryba-ikra-moreprodukty', 'zamorozhennye-produkty', 'orehi-suhofrukty-sneki', 'ovoschi-frukty-zelen-griby-yagody', 'kolbasnye-izdeliya', 'ptica-myaso', 'syry', 'moloko-syr-yayca', 'alkogol']
+# whitelist = ['voda-soki-napitki', 'chay-kofe-sladosti',
+#              'bakaleya', 'konditerskie_izdeliya', 'hlebnaya-vypechka', 'ryba-ikra-moreprodukty', 'zamorozhennye-produkty', 'orehi-suhofrukty-sneki', 'ovoschi-frukty-zelen-griby-yagody', 'kolbasnye-izdeliya', 'ptica-myaso', 'syry', 'moloko-syr-yayca', 'alkogol']
 
 
 class AshanParser():
@@ -80,8 +80,8 @@ class AshanParser():
 
         time.sleep(1)
         for ctg in ctgs:
-            if ctg['code'] not in whitelist:
-                continue
+            # if ctg['code'] not in whitelist:
+            #     continue
             print(ctg['name'])
             products = self.fetch_products(
                 category=ctg['code'], v=True, sleep_sec=0.3)
