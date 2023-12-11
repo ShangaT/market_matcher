@@ -78,7 +78,7 @@ def join_by_names():
     processed_products['name_clear'] = products['name_clear']
     # Добавляются категории в итоговый датафрейм
     processed_products['category'] = products[products['name_clear'] == processed_products['name_clear']]['category']
-    processed_products['category_general'] = products[products['name_clear'] == processed_products['name_clear']]['general_category']
+    processed_products['category_general'] = products[products['name_clear'] == processed_products['name_clear']]['category_general']
     # Делаются отдельные выборки для дальнейшего распределения цен по полям
     products_perekrestok = products[products['shop_rus'] == 'Перекресток'].copy()
     products_magnit = products[products['shop_rus'] == 'Магнит'].copy()
