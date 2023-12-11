@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Продукты</title>
+</head>
+<body>
+    <h2>Shape {{ shapeX }} {{ shapeY }}</h2>
+    <h3>columns: {{ columns }}</h3>
+    <h1>DataFrame Table</h1>
+    {{ html_table|safe }}
+    <!-- {% if product_data.empty %}
+        <p>No data available.</p>
+    {% else %}
+        {{ product_data|safe }}
+    {% endif %} -->
+</body>
+</html>

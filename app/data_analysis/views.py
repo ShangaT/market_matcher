@@ -1,20 +1,32 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from .models import Product
-from classifier_training.market_analysis import classification, Diagram, get_products_queryset
-
+from classifier_training.market_analysis import Diagram, join_by_names
+from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.shortcuts import render
 
+from pandas import DataFrame
+
+def get_cashed_data():
+    try:
+        data = cache.get('processed_products')
+        if DataFrame(data).empty:
+            raise TypeError("Cashed data is empty") 
+        print("data cached (index)")
+    except TypeError:
+        print("data not cached (index)")
+        data = join_by_names()
+        cache.set('processed_products', data)
+    return DataFrame(data)
+
 def index(request):
-    products = get_products_queryset()
-    categories = classification(products)['general_category'].cat.categories.tolist()
-    contant = {"categories": categories}
-    return render(request, 'data_analysis/index.html', contant)
+    categories = get_cashed_data()['general_category'].cat.categories.tolist()
+    content = {"categories": categories}
+    return render(request, 'data_analysis/index.html', content)
 
 def visualization(request):
-    products = get_products_queryset()
-    df = classification(products)
+    df = get_cashed_data()
     Diagram.top_10_max(df)
     Diagram.top_10_min(df)
     Diagram.pivot_table_mean(df)
@@ -22,7 +34,17 @@ def visualization(request):
     return render(request, 'data_analysis/graphics.html')
 
 def page_1(request):
-    return HttpResponse("Бакалея и соусы")
+    df = get_cashed_data()
+    df = DataFrame(df['general_category'] == 'Бакалея и соусы')
+    content = {
+        "product_data": df,
+        "category": "Бакалея и соусы",
+        "html_table": df.to_html(classes='table table-bordered table-striped', index=False),
+        "shapeX": df.shape[0],
+        "shapeY": df.shape[1],
+        "columns": df.columns,
+        }
+    return render(request, "data_analysis/products_table.html", content)
 
 def page_2(request):
     return HttpResponse("Выпечка и хлеб")
