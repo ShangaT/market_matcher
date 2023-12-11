@@ -35,9 +35,9 @@ def visualization(request):
     Diagram.pivot_table_mod(df)
     content = {   
         "categories": categories, 
-        "category": 'Визуализация',
+        "category": 'Визуализация'
         }
-    return render(request, content, 'data_analysis/graphics.html')
+    return render(request, 'data_analysis/graphics.html', content)
 
 def page_1(request):
     category = 'Бакалея и соусы'

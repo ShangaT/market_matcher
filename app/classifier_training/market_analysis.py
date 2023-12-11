@@ -124,7 +124,7 @@ class Diagram():
 
     def pivot_table_mean(df):
         plt.figure(figsize=(10,5))
-        pivot_table = df.pivot_table(index='general_category', columns='shop_rus', values='price', aggfunc='mean')
+        pivot_table = df.pivot_table(index='category_general', columns='shop_rus', values='price', aggfunc='mean')
         plt.title('ТЕПЛОВАЯ КАРТА СРЕДНЕЙ СТОИМОСТИ ТОВАРОВ', fontsize=20)
         sns.heatmap(pivot_table, cmap='rocket', annot=True, fmt=".1f")
         plt.xlabel('Магазин', fontsize=16)
@@ -137,7 +137,7 @@ class Diagram():
 
     def pivot_table_mod(df):
         plt.figure(figsize=(10,5))
-        pivot_table = df.pivot_table(index='general_category', columns='shop_rus', values='price', aggfunc=lambda x: x.mode().max())
+        pivot_table = df.pivot_table(index='category_general', columns='shop_rus', values='price', aggfunc=lambda x: x.mode().max())
         plt.title('ТЕПЛОВАЯ КАРТА МОДЫ СТОИМОСТИ ТОВАРОВ', fontsize=20)
         sns.heatmap(pivot_table, cmap='rocket', annot=True, fmt=".1f")
         plt.xlabel('Магазин', fontsize=16)
