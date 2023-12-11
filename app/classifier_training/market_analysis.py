@@ -94,7 +94,8 @@ def join_by_names():
 
 class Diagram():
 
-    def top_10_max(df):
+    def top_10_max():
+        df = classification()
         top_10 = df.sort_values(by='price', ascending=False).head(10)
         sns.set_style('darkgrid')
         plt.figure(figsize=(7,5))
@@ -108,7 +109,8 @@ class Diagram():
         plt.savefig(chart_path,  bbox_inches = 'tight')        
         return chart_path
 
-    def top_10_min(df):
+    def top_10_min():
+        df = classification()
         top_10 = df.sort_values(by='price', ascending=True).head(10)
         sns.set_style('darkgrid')
         plt.figure(figsize=(7,5))
@@ -122,7 +124,8 @@ class Diagram():
         plt.savefig(chart_path,  bbox_inches = 'tight')        
         return chart_path
 
-    def pivot_table_mean(df):
+    def pivot_table_mean():
+        df = classification()
         plt.figure(figsize=(10,5))
         pivot_table = df.pivot_table(index='general_category', columns='shop_rus', values='price', aggfunc='mean')
         plt.title('ТЕПЛОВАЯ КАРТА СРЕДНЕЙ СТОИМОСТИ ТОВАРОВ', fontsize=20)
@@ -135,7 +138,8 @@ class Diagram():
         plt.savefig(chart_path,  bbox_inches = 'tight')        
         return chart_path
 
-    def pivot_table_mod(df):
+    def pivot_table_mod():
+        df = classification()
         plt.figure(figsize=(10,5))
         pivot_table = df.pivot_table(index='general_category', columns='shop_rus', values='price', aggfunc=lambda x: x.mode().max())
         plt.title('ТЕПЛОВАЯ КАРТА МОДЫ СТОИМОСТИ ТОВАРОВ', fontsize=20)
@@ -154,11 +158,8 @@ def get_products_queryset():
 
 if __name__ == '__main__':
 
-    products_qs = get_products_queryset()
-
-    df = classification(products_qs)
-    top_max = Diagram.top_10_max(df)
-    top_min = Diagram.top_10_min(df)
-    mean = Diagram.pivot_table_mean(df)
-    mod = Diagram.pivot_table_mod(df)
+    top_max = Diagram.top_10_max()
+    top_min = Diagram.top_10_min()
+    mean = Diagram.pivot_table_mean()
+    mod = Diagram.pivot_table_mod()
     plt.show()

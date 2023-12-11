@@ -26,11 +26,10 @@ def index(request):
     return render(request, 'data_analysis/index.html', content)
 
 def visualization(request):
-    df = get_cashed_data()
-    Diagram.top_10_max(df)
-    Diagram.top_10_min(df)
-    Diagram.pivot_table_mean(df)
-    Diagram.pivot_table_mod(df)
+    Diagram.top_10_max()
+    Diagram.top_10_min()
+    Diagram.pivot_table_mean()
+    Diagram.pivot_table_mod()
     return render(request, 'data_analysis/graphics.html')
 
 def page_1(request):
