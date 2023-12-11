@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',    
     'django.contrib.postgres', #это модуль Django, который предоставляет интеграцию с базой данных PostgreSQL 
     'data_analysis',
+    'django_bootstrap5',
 ]
 
 MIDDLEWARE = [
@@ -47,7 +48,7 @@ ROOT_URLCONF = 'market_matcher.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'app/data_analysis/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

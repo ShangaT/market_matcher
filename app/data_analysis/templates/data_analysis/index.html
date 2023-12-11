@@ -1,19 +1,18 @@
+{% load django_bootstrap5 %}
 <!DOCTYPE html>
+<html>
+<head>
+    <title>Стартовая страница</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+</head>
+<header>        
+    {% include 'data_analysis/header.html' with categories=categories category=category %}    
+</header>
+<body>
 
-<html lang = "ru">
-
-    <head>
-        <title>Стартовая страница</title>
-        <meta charset="utf-8">
-    </head>
-
-    <body>        
-        
-        {% for i in categories %}
-        <a href="category_{{forloop.counter}}">{{ i }}</a> <br>
-        {% endfor %}
-        <a href="visualization">ВИЗУАЛИЗАЦИЯ</a>
-        
-    </body>
-    
+    <h1 class="display-1">Стартовая страница</h1>
+</body>
 </html>

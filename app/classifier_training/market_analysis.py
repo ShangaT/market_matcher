@@ -53,11 +53,11 @@ def classification():
 
     products['clear_category'] = products['category'].apply(preprocess_text)
     prediction = model.predict(products['clear_category'])
-    products['general_category'] = prediction    
+    products['category_general'] = prediction    
 
     products.category = products.category.astype('category')
     products.category_code = products.category_code.astype('category')
-    products.general_category = products.general_category.astype('category')
+    products.category_general = products.category_general.astype('category')
 
     conditions = [(products['store__id'] == 1),
                   (products['store__id'] == 2), 
@@ -69,23 +69,23 @@ def classification():
 
 def join_by_names():
     products = classification()
-    
+    # Очистка имен
     products['name_clear']=products['name'].apply(preprocess_text)
 
     processed_products = DataFrame()
-
+    # Дублируются имена и очищенные имена для дальнейшей работы
     processed_products['name'] = products['name']
     processed_products['name_clear'] = products['name_clear']
-
+    # Добавляются категории в итоговый датафрейм
     processed_products['category'] = products[products['name_clear'] == processed_products['name_clear']]['category']
     processed_products['category_general'] = products[products['name_clear'] == processed_products['name_clear']]['general_category']
-
+    # Делаются отдельные выборки для дальнейшего распределения цен по полям
     products_perekrestok = products[products['shop_rus'] == 'Перекресток'].copy()
     products_magnit = products[products['shop_rus'] == 'Магнит'].copy()
-
+    # Добавляются цены в итоговую выборку, в соответвсии с очищенным именем товара и магазином
     processed_products = processed_products.merge(products_perekrestok[['name_clear', 'price']], how='left', on='name_clear', suffixes=('_perekrestok', ''))
     processed_products = processed_products.merge(products_magnit[['name_clear', 'price']], how='left', on='name_clear', suffixes=('_magnit', '_perekrestok'))
-
+    # Очистка от товаров, встречающихся только в одном магазине и дубликатов
     processed_products = processed_products.dropna(axis=0, how='any')
     processed_products = processed_products.drop_duplicates(subset='name_clear', keep='first')
    
@@ -94,8 +94,7 @@ def join_by_names():
 
 class Diagram():
 
-    def top_10_max():
-        df = classification()
+    def top_10_max(df):
         top_10 = df.sort_values(by='price', ascending=False).head(10)
         sns.set_style('darkgrid')
         plt.figure(figsize=(7,5))
@@ -109,8 +108,7 @@ class Diagram():
         plt.savefig(chart_path,  bbox_inches = 'tight')        
         return chart_path
 
-    def top_10_min():
-        df = classification()
+    def top_10_min(df):
         top_10 = df.sort_values(by='price', ascending=True).head(10)
         sns.set_style('darkgrid')
         plt.figure(figsize=(7,5))
@@ -124,8 +122,7 @@ class Diagram():
         plt.savefig(chart_path,  bbox_inches = 'tight')        
         return chart_path
 
-    def pivot_table_mean():
-        df = classification()
+    def pivot_table_mean(df):
         plt.figure(figsize=(10,5))
         pivot_table = df.pivot_table(index='general_category', columns='shop_rus', values='price', aggfunc='mean')
         plt.title('ТЕПЛОВАЯ КАРТА СРЕДНЕЙ СТОИМОСТИ ТОВАРОВ', fontsize=20)
@@ -138,8 +135,7 @@ class Diagram():
         plt.savefig(chart_path,  bbox_inches = 'tight')        
         return chart_path
 
-    def pivot_table_mod():
-        df = classification()
+    def pivot_table_mod(df):
         plt.figure(figsize=(10,5))
         pivot_table = df.pivot_table(index='general_category', columns='shop_rus', values='price', aggfunc=lambda x: x.mode().max())
         plt.title('ТЕПЛОВАЯ КАРТА МОДЫ СТОИМОСТИ ТОВАРОВ', fontsize=20)
