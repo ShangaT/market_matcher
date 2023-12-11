@@ -7,14 +7,40 @@ import seaborn as sns
 import numpy as np
 from django_pandas.io import read_frame
 
+import nltk
+from nltk.corpus import stopwords
+from pymystem3 import Mystem
+from string import punctuation
+
 def preprocess_text(input_string):
     clear_string = input_string.translate(str.maketrans('', '', string.punctuation + string.digits))
     clear_string = clear_string.lower()
     return clear_string
 
-def classification(database):
+def remove_words_with_g(string):
+    pattern = r"\b\d+(г|шт)\b"
+    modified_string = re.sub(pattern, "", string)
+    return modified_string.strip()
 
-    products = read_frame(database)
+def preprocess_text_long(text):
+    nltk.download('stopwords')
+    mystem = Mystem() 
+    russian_stopwords = stopwords.words("russian")
+    russian_stopwords.extend(['лента','ассорт','разм','арт','что', 'это', 'так', 'вот', 'быть', 'как', 'в', '—', 'к', 'на', 'г', 'шт'])
+    text = str(text)
+    text = remove_words_with_g(text)
+    tokens = mystem.lemmatize(text.lower())
+    tokens = [token for token in tokens if token not in russian_stopwords\
+              and token != " " \
+              and len(token)>=3 \
+              and token.strip() not in punctuation \
+              and token.isdigit()==False]
+    text = " ".join(sorted(tokens))
+    return text
+
+def classification():
+
+    products = read_frame(get_products_queryset())
 
     products.drop_duplicates(inplace=True)
     products.dropna(inplace=True)
@@ -40,39 +66,10 @@ def classification(database):
 
     return products
 
-def join_by_names(database, category):
-    with open('classifier_training/model_name.pkl', 'rb') as f:
-        model = joblib.load(f)
-
-    products = read_frame(database)
-
-    products.drop_duplicates(inplace=True)
-    products.dropna(inplace=True)
-
-    products = products[products.general_category.isin([category])]
-
-    products['clear_name'] = products['name'].apply(preprocess_text)
-    products['general_name'] = model.predict(products['clear_name']) 
-
-    products.category = products.category.astype('category')
-    products.category_code = products.category_code.astype('category')
-    products.general_category = products.general_category.astype('category')
-
-    conditions = [(products['store__id'] == 1),
-                  (products['store__id'] == 2), 
-                  (products['store__id'] == 3)]
-    values = ['Ашан', 'Магнит', 'Перекресток']
-    products['shop_rus'] = np.select(conditions, values)
-
-    #TODO: сделать новую таблицу 
-    # должны быть поля: назавние продукта 
-    '''
-    Todo: переписать в новую таблицу, в которой будут поля:
-    Поля с ценой для каждого магазина
-    Поле с названием
-    Поле с обобщенной категорией
-    Код продукта
-    '''
+def join_by_names():
+    products = classification()
+    
+    products['clear_name']=products['name'].apply(preprocess_text)
 
     return products
 
