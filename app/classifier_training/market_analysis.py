@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 from django_pandas.io import read_frame
+from pandas import DataFrame
 
 import nltk
 from nltk.corpus import stopwords
@@ -26,7 +27,7 @@ def preprocess_text_long(text):
     nltk.download('stopwords')
     mystem = Mystem() 
     russian_stopwords = stopwords.words("russian")
-    russian_stopwords.extend(['лента','ассорт','разм','арт','что', 'это', 'так', 'вот', 'быть', 'как', 'в', '—', 'к', 'на', 'г', 'шт'])
+    russian_stopwords.extend(['лента','ассорт','разм','арт','что', 'это', 'так', 'вот', 'быть', 'как', 'в', '—', 'к', 'на', 'г', 'шт', 'магнит', 'перекрёсток'])
     text = str(text)
     text = remove_words_with_g(text)
     tokens = mystem.lemmatize(text.lower())
@@ -69,9 +70,26 @@ def classification():
 def join_by_names():
     products = classification()
     
-    products['clear_name']=products['name'].apply(preprocess_text)
+    products['name_clear']=products['name'].apply(preprocess_text)
 
-    return products
+    processed_products = DataFrame()
+
+    processed_products['name'] = products['name']
+    processed_products['name_clear'] = products['name_clear']
+
+    processed_products['category'] = products[products['name_clear'] == processed_products['name_clear']]['category']
+    processed_products['category_general'] = products[products['name_clear'] == processed_products['name_clear']]['general_category']
+
+    products_perekrestok = products[products['shop_rus'] == 'Перекресток'].copy()
+    products_magnit = products[products['shop_rus'] == 'Магнит'].copy()
+
+    processed_products = processed_products.merge(products_perekrestok[['name_clear', 'price']], how='left', on='name_clear', suffixes=('_perekrestok', ''))
+    processed_products = processed_products.merge(products_magnit[['name_clear', 'price']], how='left', on='name_clear', suffixes=('_magnit', '_perekrestok'))
+
+    processed_products = processed_products.dropna(axis=0, how='any')
+    processed_products = processed_products.drop_duplicates(subset='name_clear', keep='first')
+   
+    return processed_products.reset_index()
 
 
 class Diagram():
