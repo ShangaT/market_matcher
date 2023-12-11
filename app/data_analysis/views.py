@@ -21,7 +21,7 @@ def get_cashed_data():
     return DataFrame(data)
 
 def index(request):
-    categories = get_cashed_data()['general_category'].cat.categories.tolist()
+    categories = get_cashed_data()['category_general'].cat.categories.tolist()
     content = {"categories": categories}
     return render(request, 'data_analysis/index.html', content)
 
@@ -34,44 +34,155 @@ def visualization(request):
     return render(request, 'data_analysis/graphics.html')
 
 def page_1(request):
+    category = 'Бакалея и соусы'
     df = get_cashed_data()
-    df = DataFrame(df['general_category'] == 'Бакалея и соусы')
-    content = {
-        "product_data": df,
-        "category": "Бакалея и соусы",
-        "html_table": df.to_html(classes='table table-bordered table-striped', index=False),
-        "shapeX": df.shape[0],
-        "shapeY": df.shape[1],
-        "columns": df.columns,
+    df = DataFrame(df[df['category_general'] == category])[['name', 'price_magnit', 'price_perekrestok']]
+    df.rename(columns={ 
+            'name': 'Наименование',
+            'price_magnit': 'Цена в магните',
+            'price_perekrestok': 'Цена в пятерочке'
+         },  inplace=True)
+    content = {    
+        "category": category,
+        "html_table": df.to_html(classes='table table-bordered table-striped', index=False)
         }
     return render(request, "data_analysis/products_table.html", content)
 
 def page_2(request):
-    return HttpResponse("Выпечка и хлеб")
+    category = 'Выпечка и хлеб'
+    df = get_cashed_data()
+    df = DataFrame(df[df['category_general'] == category])[['name', 'price_magnit', 'price_perekrestok']]
+    df.rename(columns={ 
+            'name': 'Наименование',
+            'price_magnit': 'Цена в магните',
+            'price_perekrestok': 'Цена в пятерочке'
+         },  inplace=True)
+    content = {    
+        "category": category,
+        "html_table": df.to_html(classes='table table-bordered table-striped', index=False)
+        }
+    return render(request, "data_analysis/products_table.html", content)
 
 def page_3(request):
-    return HttpResponse("Молочные продукты")
+    category = 'Молочные продукты'
+    df = get_cashed_data()
+    df = DataFrame(df[df['category_general'] == category])[['name', 'price_magnit', 'price_perekrestok']]
+    df.rename(columns={ 
+            'name': 'Наименование',
+            'price_magnit': 'Цена в магните',
+            'price_perekrestok': 'Цена в пятерочке'
+         },  inplace=True)
+    content = {    
+        "category": category,
+        "html_table": df.to_html(classes='table table-bordered table-striped', index=False)
+        }
+    return render(request, "data_analysis/products_table.html", content)
 
 def page_4(request):
-    return HttpResponse("Мясные продукты")
+    category = 'Мясные продукты'
+    df = get_cashed_data()
+    df = DataFrame(df[df['category_general'] == category])[['name', 'price_magnit', 'price_perekrestok']]
+    df.rename(columns={ 
+            'name': 'Наименование',
+            'price_magnit': 'Цена в магните',
+            'price_perekrestok': 'Цена в пятерочке'
+         },  inplace=True)
+    content = {    
+        "category": category,
+        "html_table": df.to_html(classes='table table-bordered table-striped', index=False)
+        }
+    return render(request, "data_analysis/products_table.html", content)
 
 def page_5(request):
-    return HttpResponse("Напитки")
+    category = 'Напитки'
+    df = get_cashed_data()
+    df = DataFrame(df[df['category_general'] == category])[['name', 'price_magnit', 'price_perekrestok']]
+    df.rename(columns={ 
+            'name': 'Наименование',
+            'price_magnit': 'Цена в магните',
+            'price_perekrestok': 'Цена в пятерочке'
+         },  inplace=True)
+    content = {    
+        "category": category,
+        "html_table": df.to_html(classes='table table-bordered table-striped', index=False)
+        }
+    return render(request, "data_analysis/products_table.html", content)
 
 def page_6(request):
-    return HttpResponse("Овощи, фрукты, закуски")
+    category = 'Овощи, фрукты, закуски'
+    df = get_cashed_data()
+    df = DataFrame(df[df['category_general'] == category])[['name', 'price_magnit', 'price_perekrestok']]
+    df.rename(columns={ 
+            'name': 'Наименование',
+            'price_magnit': 'Цена в магните',
+            'price_perekrestok': 'Цена в пятерочке'
+         },  inplace=True)
+    content = {    
+        "category": category,
+        "html_table": df.to_html(classes='table table-bordered table-striped', index=False)
+        }
+    return render(request, "data_analysis/products_table.html", content)
 
 def page_7(request):
-    return HttpResponse("Прочее")
+    category = 'Прочее'
+    df = get_cashed_data()
+    df = DataFrame(df[df['category_general'] == category])[['name', 'price_magnit', 'price_perekrestok']]
+    df.rename(columns={ 
+            'name': 'Наименование',
+            'price_magnit': 'Цена в магните',
+            'price_perekrestok': 'Цена в пятерочке'
+         },  inplace=True)
+    content = {    
+        "category": category,
+        "html_table": df.to_html(classes='table table-bordered table-striped', index=False)
+        }
+    return render(request, "data_analysis/products_table.html", content)
 
 def page_8(request):
-    return HttpResponse("Рыба и морепродукты")
+    category = 'Рыба и морепродукты'
+    df = get_cashed_data()
+    df = DataFrame(df[df['category_general'] == category])[['name', 'price_magnit', 'price_perekrestok']]
+    df.rename(columns={ 
+            'name': 'Наименование',
+            'price_magnit': 'Цена в магните',
+            'price_perekrestok': 'Цена в пятерочке'
+         },  inplace=True)
+    content = {    
+        "category": category,
+        "html_table": df.to_html(classes='table table-bordered table-striped', index=False)
+        }
+    return render(request, "data_analysis/products_table.html", content)
 
 def page_9(request):
-    return HttpResponse("Сладости")
+    category = 'Сладости'
+    df = get_cashed_data()
+    df = DataFrame(df[df['category_general'] == category])[['name', 'price_magnit', 'price_perekrestok']]
+    df.rename(columns={ 
+            'name': 'Наименование',
+            'price_magnit': 'Цена в магните',
+            'price_perekrestok': 'Цена в пятерочке'
+         },  inplace=True)
+    content = {    
+        "category": category,
+        "html_table": df.to_html(classes='table table-bordered table-striped', index=False)
+        }
+    return render(request, "data_analysis/products_table.html", content)
 
 def page_10(request):
-    return HttpResponse("Чай, кофе, какао, сахар")
+    category = 'Чай, кофе, какао, сахар'
+    df = get_cashed_data()
+    df = DataFrame(df[df['category_general'] == category])[['name', 'price_magnit', 'price_perekrestok']]
+    df.rename(columns={ 
+            'name': 'Наименование',
+            'price_magnit': 'Цена в магните',
+            'price_perekrestok': 'Цена в пятерочке'
+         },  inplace=True)
+    content = {    
+        "category": category,
+        "html_table": df.to_html(classes='table table-bordered table-striped', index=False)
+        }
+    return render(request, "data_analysis/products_table.html", content)
+
 def page_11(request):
     products = Product.objects.all()
     paginator = Paginator(products, 25)  # Show 25 contacts per page.
