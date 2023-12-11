@@ -5,7 +5,7 @@ from pypika import Query
 from db.pw_model import Product, Store
 
 
-def createDriver(dbconfig: DBConfig) -> Database:
+def create_driver(dbconfig: DBConfig) -> Database:
     match dbconfig.driver.lower():
         case "postgres":
             return PostgresqlDatabase(database=dbconfig.dbname, user=dbconfig.user,

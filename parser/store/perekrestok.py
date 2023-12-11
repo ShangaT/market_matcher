@@ -6,8 +6,8 @@ import urllib.parse
 from db.pw_model import Product
 
 
-whitelist_id = [113, 148, 100, 708, 187, 205, 242,
-                132, 782, 174, 54, 793, 217, 79, 224, 168, 74, 1]
+# whitelist_id = [113, 148, 100, 708, 187, 205, 242,
+#                 132, 782, 174, 54, 793, 217, 79, 224, 168, 74, 1]
 
 
 class PerekrestokParser:
@@ -36,18 +36,21 @@ class PerekrestokParser:
         r.raise_for_status()
 
     def fetch_categories(self):
-        r = self.client.get(
-            'https://www.perekrestok.ru/api/customer/1.4.1.0/catalog')
+        r = self.client.get('https://www.perekrestok.ru/api/customer/1.4.1.0/catalog')
 
         categories = []
 
         for ctg in r.json()['content']['categories']:
-            category = {'id': ctg['category']['id'], 'name': ctg['category']
-                        ['title'], 'code': ctg['category']['slug'], 'children': []}
-
+            category = {'id': ctg['category']['id'], 
+                        'name': ctg['category']['title'], 
+                        'code': ctg['category']['slug'], 
+                        'children': []
+                        }
             for subctg in ctg['children']:
-                subcategory = {
-                    'id': ctg['category']['id'], 'name': subctg['category']['title'], 'code': subctg['category']['slug']}
+                subcategory = {'id': ctg['category']['id'], 
+                               'name': subctg['category']['title'], 
+                               'code': subctg['category']['slug']
+                                }
                 category['children'].append(subcategory)
 
             categories.append(category)
@@ -67,7 +70,6 @@ class PerekrestokParser:
                 "category": category_id, "onlyWithProductReviews": False}, "withBestProductReviews": False},)
             data = r.json()['content']
             next_page_exists = data['paginator']['nextPageExists']
-
             total_parsed += len(data['items'])
 
             if v:
@@ -75,7 +77,11 @@ class PerekrestokParser:
 
             for p in data['items']:
                 products.append(
-                    {'id': p['id'], 'name': p['title'], 'code': p['masterData']['slug'], 'price': p['priceTag']['price']/100})
+                    {'id': p['id'], 
+                     'name': p['title'], 
+                     'code': p['masterData']['slug'], 
+                     'price': p['priceTag']['price']/100
+                    })
 
             page += 1
             time.sleep(sleep_sec)
@@ -89,8 +95,6 @@ class PerekrestokParser:
 
         time.sleep(1)
         for ctg in ctgs:
-            # if ctg['code'] not in whitelist:
-            #     continue
             print(ctg['name'])
             products = self.fetch_products(
                 category_id=ctg['id'], v=True, sleep_sec=0.5)
@@ -100,7 +104,8 @@ class PerekrestokParser:
                             code=p['code'],
                             category=ctg['name'],
                             category_code=ctg['code'],
-                            price=p['price']) for p in products]
+                            price=p['price']) for p in products
+                    ]
             all_products += data
 
         return all_products
