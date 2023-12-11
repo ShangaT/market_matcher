@@ -6,15 +6,42 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 from django_pandas.io import read_frame
+from pandas import DataFrame
+
+import nltk
+from nltk.corpus import stopwords
+from pymystem3 import Mystem
+from string import punctuation
 
 def preprocess_text(input_string):
     clear_string = input_string.translate(str.maketrans('', '', string.punctuation + string.digits))
     clear_string = clear_string.lower()
     return clear_string
 
-def classification(database):
+def remove_words_with_g(string):
+    pattern = r"\b\d+(г|шт)\b"
+    modified_string = re.sub(pattern, "", string)
+    return modified_string.strip()
 
-    products = read_frame(database)
+def preprocess_text_long(text):
+    nltk.download('stopwords')
+    mystem = Mystem() 
+    russian_stopwords = stopwords.words("russian")
+    russian_stopwords.extend(['лента','ассорт','разм','арт','что', 'это', 'так', 'вот', 'быть', 'как', 'в', '—', 'к', 'на', 'г', 'шт', 'магнит', 'перекрёсток'])
+    text = str(text)
+    text = remove_words_with_g(text)
+    tokens = mystem.lemmatize(text.lower())
+    tokens = [token for token in tokens if token not in russian_stopwords\
+              and token != " " \
+              and len(token)>=3 \
+              and token.strip() not in punctuation \
+              and token.isdigit()==False]
+    text = " ".join(sorted(tokens))
+    return text
+
+def classification():
+
+    products = read_frame(get_products_queryset())
 
     products.drop_duplicates(inplace=True)
     products.dropna(inplace=True)
@@ -26,11 +53,11 @@ def classification(database):
 
     products['clear_category'] = products['category'].apply(preprocess_text)
     prediction = model.predict(products['clear_category'])
-    products['general_category'] = prediction    
+    products['category_general'] = prediction    
 
     products.category = products.category.astype('category')
     products.category_code = products.category_code.astype('category')
-    products.general_category = products.general_category.astype('category')
+    products.category_general = products.category_general.astype('category')
 
     conditions = [(products['store__id'] == 1),
                   (products['store__id'] == 2), 
@@ -40,41 +67,29 @@ def classification(database):
 
     return products
 
-def join_by_names(database, category):
-    with open('classifier_training/model_name.pkl', 'rb') as f:
-        model = joblib.load(f)
+def join_by_names():
+    products = classification()
+    # Очистка имен
+    products['name_clear']=products['name'].apply(preprocess_text)
 
-    products = read_frame(database)
-
-    products.drop_duplicates(inplace=True)
-    products.dropna(inplace=True)
-
-    products = products[products.general_category.isin([category])]
-
-    products['clear_name'] = products['name'].apply(preprocess_text)
-    products['general_name'] = model.predict(products['clear_name']) 
-
-    products.category = products.category.astype('category')
-    products.category_code = products.category_code.astype('category')
-    products.general_category = products.general_category.astype('category')
-
-    conditions = [(products['store__id'] == 1),
-                  (products['store__id'] == 2), 
-                  (products['store__id'] == 3)]
-    values = ['Ашан', 'Магнит', 'Перекресток']
-    products['shop_rus'] = np.select(conditions, values)
-
-    #TODO: сделать новую таблицу 
-    # должны быть поля: назавние продукта 
-    '''
-    Todo: переписать в новую таблицу, в которой будут поля:
-    Поля с ценой для каждого магазина
-    Поле с названием
-    Поле с обобщенной категорией
-    Код продукта
-    '''
-
-    return products
+    processed_products = DataFrame()
+    # Дублируются имена и очищенные имена для дальнейшей работы
+    processed_products['name'] = products['name']
+    processed_products['name_clear'] = products['name_clear']
+    # Добавляются категории в итоговый датафрейм
+    processed_products['category'] = products[products['name_clear'] == processed_products['name_clear']]['category']
+    processed_products['category_general'] = products[products['name_clear'] == processed_products['name_clear']]['category_general']
+    # Делаются отдельные выборки для дальнейшего распределения цен по полям
+    products_perekrestok = products[products['shop_rus'] == 'Перекресток'].copy()
+    products_magnit = products[products['shop_rus'] == 'Магнит'].copy()
+    # Добавляются цены в итоговую выборку, в соответвсии с очищенным именем товара и магазином
+    processed_products = processed_products.merge(products_perekrestok[['name_clear', 'price']], how='left', on='name_clear', suffixes=('_perekrestok', ''))
+    processed_products = processed_products.merge(products_magnit[['name_clear', 'price']], how='left', on='name_clear', suffixes=('_magnit', '_perekrestok'))
+    # Очистка от товаров, встречающихся только в одном магазине и дубликатов
+    processed_products = processed_products.dropna(axis=0, how='any')
+    processed_products = processed_products.drop_duplicates(subset='name_clear', keep='first')
+   
+    return processed_products.reset_index()
 
 
 class Diagram():
@@ -109,7 +124,7 @@ class Diagram():
 
     def pivot_table_mean(df):
         plt.figure(figsize=(10,5))
-        pivot_table = df.pivot_table(index='general_category', columns='shop_rus', values='price', aggfunc='mean')
+        pivot_table = df.pivot_table(index='category_general', columns='shop_rus', values='price', aggfunc='mean')
         plt.title('ТЕПЛОВАЯ КАРТА СРЕДНЕЙ СТОИМОСТИ ТОВАРОВ', fontsize=20)
         sns.heatmap(pivot_table, cmap='rocket', annot=True, fmt=".1f")
         plt.xlabel('Магазин', fontsize=16)
@@ -122,7 +137,7 @@ class Diagram():
 
     def pivot_table_mod(df):
         plt.figure(figsize=(10,5))
-        pivot_table = df.pivot_table(index='general_category', columns='shop_rus', values='price', aggfunc=lambda x: x.mode().max())
+        pivot_table = df.pivot_table(index='category_general', columns='shop_rus', values='price', aggfunc=lambda x: x.mode().max())
         plt.title('ТЕПЛОВАЯ КАРТА МОДЫ СТОИМОСТИ ТОВАРОВ', fontsize=20)
         sns.heatmap(pivot_table, cmap='rocket', annot=True, fmt=".1f")
         plt.xlabel('Магазин', fontsize=16)
@@ -139,11 +154,8 @@ def get_products_queryset():
 
 if __name__ == '__main__':
 
-    products_qs = get_products_queryset()
-
-    df = classification(products_qs)
-    top_max = Diagram.top_10_max(df)
-    top_min = Diagram.top_10_min(df)
-    mean = Diagram.pivot_table_mean(df)
-    mod = Diagram.pivot_table_mod(df)
+    top_max = Diagram.top_10_max()
+    top_min = Diagram.top_10_min()
+    mean = Diagram.pivot_table_mean()
+    mod = Diagram.pivot_table_mod()
     plt.show()

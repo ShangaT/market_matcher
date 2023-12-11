@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Стартовая страница</title>
+    <title>{{ category }}</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     {% bootstrap_css %}
@@ -12,7 +12,7 @@
     {% include 'data_analysis/header.html' with categories=categories category=category %}    
 </header>
 <body>
-
-    <h1 class="display-1">Стартовая страница</h1>
+    <h1 class="display-2">{{ category }}</h1>
+    {{ html_table|safe }}
 </body>
 </html>
