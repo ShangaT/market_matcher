@@ -34,4 +34,9 @@ Frontend (веб приложение) + Backend (БД, сервис-парсе�
 
 ![Анализ 10 самых дорогих продуктов](https://github.com/leenzstra/market_matcher/assets/65588137/4a2b9eb5-3240-4c81-ac4e-8e6d9ff8cd6c)
 
+### Содержание базы данных
+
+![БД](https://github.com/leenzstra/market_matcher/assets/65588137/e6a80491-26f0-4b2b-bdd2-b6a93c487993)
+
+
 
