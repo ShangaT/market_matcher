@@ -1,20 +1,30 @@
-
 from multiprocessing.pool import ThreadPool
 import sys
 from config import Config
 from db.database import Db, create_driver
-# from db.model import Product
-from db.pw_model import Product
 from store.ashan import AshanParser
 from store.perekrestok import PerekrestokParser
 from store.magnit import MagnitParser
-from pypika import Table, Query
-
-from more_itertools import chunked
-
 from store.stocks_info import StocksInfo
 
-if __name__ == '__main__':
+BATCH_SIZE = 100
+
+def remove_duplicates(products: list) -> list:
+    seen = {}
+    for obj in products:
+        if obj.product_id not in seen:
+            seen[obj.product_id] = obj
+    return list(seen.values())
+
+
+def parse_stores(parsers: list, db: Db):
+    for parser in parsers:
+        products = remove_duplicates(parser.start())
+        db.add_products(products, BATCH_SIZE)
+        print(f'{parser.__class__}_{
+              parser.stock.region}: parsed products {len(products)}')
+
+def parse():
     # конфиг парсера
     cfg = Config()
     cfg.read_from_env()
@@ -24,7 +34,7 @@ if __name__ == '__main__':
 
     # инстанс базы данных
     db = Db(driver)
-    db.connect()
+    db.connect(cfg.docker)
 
     # аргумент parse для запуска парсера
     args = sys.argv[1:]
@@ -43,41 +53,23 @@ if __name__ == '__main__':
     perekrestok_stocks = StocksInfo(PerekrestokParser.store_code)
 
     # парсеры
-    ap = AshanParser(stockId=ashan_stocks.stocks[2].stockId)
-    mp = MagnitParser(stockId=magnit_stocks.stocks[2].stockId)
-    pp = PerekrestokParser(stockId=perekrestok_stocks.stocks[2].stockId)
-    parsers = [ap, mp, pp]
+    aps = [AshanParser(stock=s) for s in ashan_stocks.stocks]
+    mps = [MagnitParser(stock=s) for s in magnit_stocks.stocks]
+    pps = [PerekrestokParser(stock=s) for s in perekrestok_stocks.stocks]
 
-    products = []
-
-    def parse_callback(parse_result: list):
-        products.extend(parse_result)
+    parse_groups = [
+        aps, 
+        mps, 
+        pps
+        ]
 
     # парсинг продукты многопоточно
-    with ThreadPool(processes=len(parsers)) as pool:
-        for parser in parsers:
-            pool.apply_async(parser.start, callback=parse_callback)
-        pool.close() 
-        pool.join()  
+    with ThreadPool(processes=len(parse_groups)) as pool:
+        for group in parse_groups:
+            pool.apply_async(func=parse_stores, args=(group, db))
+        pool.close()
+        pool.join()
 
-    print('Parsed products = ', len(products))
 
-    # запись продуктов в базу данных
-    with db.pool.atomic():
-        for batch in chunked([p.__data__ for p in products], 100):
-            Product.insert_many(batch).on_conflict_ignore().execute()
-
-    # chunk_size = 100
-    # chunks: list[list[Product]] = list(chunked(products, chunk_size))
-
-    # # записываем продукты в бд
-    # ptable = Table('product')
-    # for chunk in chunks:
-    #     q = Query.into(ptable).columns(ptable.product_id, ptable.store_id, ptable.name, ptable.code, ptable.category, ptable.category_code, ptable.price)
-        
-    #     for item in chunk:
-    #         q = q.insert(item.product_id, item.store_id, item.name, item.code, item.category, item.category_code, item.price)
-
-    #     q = q.on_conflict(ptable.product_id).do_nothing()
-        
-    #     db.pool.execute_sql(str(q))
+if __name__ == '__main__':
+    parse()

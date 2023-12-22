@@ -2,6 +2,7 @@ import time
 from requests import Session
 
 from db.pw_model import Product
+from store.stocks_info import Stock
 
 # whitelist = ['voda-soki-napitki', 'chay-kofe-sladosti',
 #              'bakaleya', 'konditerskie_izdeliya', 'hlebnaya-vypechka', 'ryba-ikra-moreprodukty', 'zamorozhennye-produkty', 'orehi-suhofrukty-sneki', 'ovoschi-frukty-zelen-griby-yagody', 'kolbasnye-izdeliya', 'ptica-myaso', 'syry', 'moloko-syr-yayca', 'alkogol']
@@ -12,23 +13,23 @@ class AshanParser():
     store_id = 1
     store_code = 'ashan'
 
-    def __init__(self, stockId=1) -> None:
-        self.stockId = stockId
+    def __init__(self, stock: Stock) -> None:
+        self.stock = stock
         self.client = Session()
         self.client.headers.update(
             {'User-Agent': 'Mozilla/5.0 (Linux; U; Linux i674 ) Gecko/20130401 Firefox/62.8'})
 
     def fetch_categories(self):
         r = self.client.get(
-            f'https://www.auchan.ru/v1/categories?max_depth=1&merchant_id={self.stockId}')
+            f'https://www.auchan.ru/v1/categories?max_depth=1&merchant_id={self.stock.stock_id}')
 
         categories = []
 
-        for i, ctg in enumerate(r.json()):
+        for _, ctg in enumerate(r.json()):
             category = {'name': ctg['name'],
                         'code': ctg['code'], 'children': []}
 
-            for j, subctg in enumerate(ctg['items']):
+            for _, subctg in enumerate(ctg['items']):
                 subcategory = {
                     'name': subctg['name'], 'code': subctg['code'], 'count': subctg['activeProductsCount']}
                 category['children'].append(subcategory)
@@ -47,7 +48,7 @@ class AshanParser():
 
         while num_parsed == 0 or num_parsed < total_count:
             url = f'https://www.auchan.ru/v1/catalog/products?merchantId={
-                self.stockId}&page={page}&perPage={per_page}'
+                self.stock.stock_id}&page={page}&perPage={per_page}'
             r = self.client.post(
                 url, json={"filter": {"category": category, }, },)
             data = r.json()
@@ -70,23 +71,19 @@ class AshanParser():
 
         return products
 
-    def fetch_product_details(self):
-        url = 'https://www.auchan.ru/v1/catalog/product-detail?code=syr_rossiyskiy_rovenki&merchantId=1'
-
     def start(self) -> list[Product]:
         ctgs = self.fetch_categories()
 
         all_products = []
 
-        time.sleep(1)
         for ctg in ctgs:
-            # if ctg['code'] not in whitelist:
-            #     continue
-            print(ctg['name'])
+            time.sleep(1)
+            print(AshanParser.store_code, self.stock.region, ctg['name'])
             products = self.fetch_products(
-                category=ctg['code'], v=True, sleep_sec=0.3)
+                category=ctg['code'], v=False, sleep_sec=0.2)
             data = [Product(product_id=f'{AshanParser.store_code}-{p['id']}',
                             store_id=AshanParser.store_id, 
+                            region_id=self.stock.region_id,
                             name=p['name'], 
                             code=p['code'], 
                             category=ctg['name'],

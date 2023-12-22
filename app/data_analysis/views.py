@@ -43,6 +43,7 @@ def page_1(request):
     category = 'Бакалея и соусы'
     df = get_cashed_data()
     categories = df['category_general'].cat.categories.tolist()
+    print(df.columns)
     df = DataFrame(df[df['category_general'] == category])[['name', 'price_magnit', 'price_perekrestok']]
     df.rename(columns={ 
             'name': 'Наименование',

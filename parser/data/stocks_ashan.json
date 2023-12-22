@@ -1,16 +1,19 @@
 {
-    "stocks":[
+    "stocks": [
         {
-            "region":"Москва",
-            "stockId":48
+            "region": "Москва",
+            "region_id": 77,
+            "stock_id": 48
         },
         {
             "region": "Санкт-Петербург",
-            "stockId": 24
+            "region_id": 78,
+            "stock_id": 24
         },
         {
             "region": "Пермь",
-            "stockId": 727
+            "region_id": 59,
+            "stock_id": 727
         }
     ]
 }

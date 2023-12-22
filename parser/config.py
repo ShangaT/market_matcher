@@ -11,9 +11,9 @@ class Config:
         self.dbconfig = dbconfig
 
     def read_from_env(self):
-        self.docker = os.environ.get("DOCKER", 0)
+        self.docker = True if int(os.environ.get("DOCKER", 0)) == 1 else 0
 
-        if self.docker == 1:
+        if self.docker:
             load_dotenv('.env.dev')
         else:
             load_dotenv('.env.local')

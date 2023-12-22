@@ -4,6 +4,7 @@ from requests import Session
 import urllib.parse
 
 from db.pw_model import Product
+from store.stocks_info import Stock
 
 
 # whitelist_id = [113, 148, 100, 708, 187, 205, 242,
@@ -15,8 +16,8 @@ class PerekrestokParser:
     store_id = 3
     store_code = 'perekrestok'
 
-    def __init__(self, stockId) -> None:
-        self.stockId = stockId
+    def __init__(self, stock: Stock) -> None:
+        self.stock = stock
         self.client = Session()
         self.client.headers.update(
             {'User-Agent': 'Mozilla/5.0 (Linux; U; Linux i674 ) Gecko/20130401 Firefox/62.8'})
@@ -32,7 +33,7 @@ class PerekrestokParser:
 
     def set_stock(self):
         r = self.client.put(
-            f'https://www.perekrestok.ru/api/customer/1.4.1.0/delivery/mode/pickup/{self.stockId}')
+            f'https://www.perekrestok.ru/api/customer/1.4.1.0/delivery/mode/pickup/{self.stock.stock_id}')
         r.raise_for_status()
 
     def fetch_categories(self):
@@ -93,13 +94,14 @@ class PerekrestokParser:
 
         all_products = []
 
-        time.sleep(1)
         for ctg in ctgs:
-            print(ctg['name'])
+            time.sleep(1)
+            print(PerekrestokParser.store_code, self.stock.region, ctg['name'])
             products = self.fetch_products(
-                category_id=ctg['id'], v=True, sleep_sec=0.5)
+                category_id=ctg['id'], v=False, sleep_sec=0.2)
             data = [Product(product_id=f'{PerekrestokParser.store_code}-{p['id']}',
                             store_id=PerekrestokParser.store_id,
+                            region_id=self.stock.region_id,
                             name=p['name'],
                             code=p['code'],
                             category=ctg['name'],

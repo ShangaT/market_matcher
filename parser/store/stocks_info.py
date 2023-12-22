@@ -1,9 +1,10 @@
 import json
 
 class Stock:
-    def __init__(self, region: str, stockId: int) -> None:
+    def __init__(self, region: str, stock_id: int, region_id: int) -> None:
         self.region = region
-        self.stockId = stockId
+        self.region_id = region_id
+        self.stock_id = stock_id
 
 class StocksInfo:
     def __init__(self, store_code = "", stock_list_prefix = "stocks", dir='data') -> None:

@@ -82,9 +82,12 @@ def join_by_names():
     # Делаются отдельные выборки для дальнейшего распределения цен по полям
     products_perekrestok = products[products['shop_rus'] == 'Перекресток'].copy()
     products_magnit = products[products['shop_rus'] == 'Магнит'].copy()
+    products_ashan = products[products['shop_rus'] == 'Ашан'].copy()
     # Добавляются цены в итоговую выборку, в соответвсии с очищенным именем товара и магазином
-    processed_products = processed_products.merge(products_perekrestok[['name_clear', 'price']], how='left', on='name_clear', suffixes=('_perekrestok', ''))
-    processed_products = processed_products.merge(products_magnit[['name_clear', 'price']], how='left', on='name_clear', suffixes=('_magnit', '_perekrestok'))
+    processed_products = processed_products.merge(products_perekrestok[[
+                                                  'name_clear', 'price']], how='left', on='name_clear', suffixes=('_perekrestok', ''))
+    processed_products = processed_products.merge(products_magnit[[
+                                                  'name_clear', 'price']], how='left', on='name_clear', suffixes=('_magnit', '_perekrestok'))
     # Очистка от товаров, встречающихся только в одном магазине и дубликатов
     processed_products = processed_products.dropna(axis=0, how='any')
     processed_products = processed_products.drop_duplicates(subset='name_clear', keep='first')
