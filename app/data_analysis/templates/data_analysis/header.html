@@ -7,10 +7,29 @@
         <div class="collapse navbar-collapse show" id="navbarNavAltMarkup">
             <div class="navbar-nav">
 
+                {% if links_name %}
+                <a href="perm" class="nav-link {% if 'perm' == 'category' %}active{% endif %} ">Пермь</a>
+                <a href="moscow" class="nav-link {% if 'moscow' == 'category' %}active{% endif %} ">Москва</a>
+                <a href="petersburg" class="nav-link {% if 'petersburg' == 'category' %}active{% endif %} ">Санкт-Петербург</a>
+                {% endif %}
+
+                {% if city == "Пермь" %}
                 {% for i in categories %}
-                <a href="category_{{forloop.counter}}" class="nav-link {% if i == 'category' %}active{% endif %} ">{{ i }}</a> <br>
+                <a href="perm/category_{{forloop.counter}}" class="nav-link {% if i == 'category' %}active{% endif %} ">{{ i }}</a> <br>
                 {% endfor %}
-                <a href="visualization" class="nav-link {% if 'Визуализация' == 'category' %}active{% endif %} ">Визуализация</a>
+                {% endif %}
+
+                {% if city == "Москва" %}
+                {% for i in categories %}
+                <a href="moscow/category_{{forloop.counter}}" class="nav-link {% if i == 'category' %}active{% endif %} ">{{ i }}</a> <br>
+                {% endfor %}
+                {% endif %}
+
+                {% if city == "Санкт-Петербург" %}
+                {% for i in categories %}
+                <a href="petersburg/category_{{forloop.counter}}" class="nav-link {% if i == 'category' %}active{% endif %} ">{{ i }}</a> <br>
+                {% endfor %}
+                {% endif %}
             </div>
         </div>
     </div>

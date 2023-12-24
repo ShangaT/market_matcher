@@ -1,0 +1,31 @@
+{% load static %}
+{% load django_bootstrap5 %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Стартовая страница</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+</head>
+<header>        
+    {% include 'data_analysis/header.html' with categories=categories category=category %}    
+</header>
+<body>
+    {% block content %}
+    <h1 class="display-1">{{city}}</h1>
+    {% endblock %}
+
+    <p class="image">
+        <img src="{% static 'data_analysis/img/max.png' %}" alt="top_10_max" > <br>
+        <img src="{% static 'data_analysis/img/min.png' %}" alt="top_10_min" >
+        <img src="{% static 'data_analysis/img/mean.png' %}" alt="pivot_table_mean" >
+        <img src="{% static 'data_analysis/img/mod.png' %}" alt="pivot_table_mod" >
+    </p>
+
+    <style>
+        .image {text-align: center;}
+    </style>
+</body>
+</html>

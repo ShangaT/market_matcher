@@ -8,10 +8,67 @@ import numpy as np
 from django_pandas.io import read_frame
 from pandas import DataFrame
 
-import nltk
+import nltk, re
 from nltk.corpus import stopwords
 from pymystem3 import Mystem
 from string import punctuation
+
+from sklearn.feature_extraction.text import CountVectorizer
+nltk.download('punkt')
+nltk.download('wordnet')
+#nltk.download('russian')
+
+class Classifier:
+
+    def transform_text(self, df_column):
+        with open('classifier_training/category_dict.txt', 'r', encoding='utf8') as dictionary:
+            words_for_vec = dictionary.read().split()
+
+        new_text = []
+        lemmatize = nltk.WordNetLemmatizer()
+        for i in df_column:
+            text = re.sub(r"\b\d+(г|шт)\b", "", i)
+            text = re.sub("[^a-zA-Z]"," ",i) #удаляем неалфавитные символы
+            text = nltk.word_tokenize(text) #токенизация
+            text = [lemmatize.lemmatize(word) for word in i] #лемматизация
+            text = "".join(text)
+            new_text.append(text)
+
+        count = CountVectorizer(vocabulary = words_for_vec) 
+        matrix = count.fit_transform(new_text).toarray()
+        #matrix = count.fit_transform(new_text).toarray() #векторизация
+        return matrix
+    
+    def classification_by_category(self):
+        products = read_frame(get_products_queryset())
+        #очистка данных
+        # products.drop_duplicates(inplace=True)
+        # products.dropna(inplace=True)
+
+        with open('classifier_training/model_category.pkl', 'rb') as f:
+            model = joblib.load(f)
+        #приведение входных данных в формат, понятный модели
+        vectors_store_categories = self.transform_text(products['category'])
+        prediction = model.predict(vectors_store_categories)
+        products['category_general'] = prediction
+
+        products.category = products.category.astype('category')
+        products.category_code = products.category_code.astype('category')
+        products.category_general = products.category_general.astype('category')
+
+        conditions_store = [(products['store__id'] == 1),
+                            (products['store__id'] == 2), 
+                            (products['store__id'] == 3)]
+        values_store = ['Ашан', 'Магнит', 'Перекресток']
+        products['shop_rus'] = np.select(conditions_store, values_store)
+
+        conditions_region = [(products['region__id'] == 59),
+                            (products['region__id'] == 77), 
+                            (products['region__id'] == 78)]
+        values_region = ['Пермь', 'Москва', 'Санкт-Петербург']
+        products['region_rus'] = np.select(conditions_region, values_region)
+
+        return products
 
 def preprocess_text(input_string):
     clear_string = input_string.translate(str.maketrans('', '', string.punctuation + string.digits))
@@ -39,40 +96,18 @@ def preprocess_text_long(text):
     text = " ".join(sorted(tokens))
     return text
 
-def classification():
-
-    products = read_frame(get_products_queryset())
-
-    products.drop_duplicates(inplace=True)
-    products.dropna(inplace=True)
-
-    with open('classifier_training/model_category.pkl', 'rb') as f:
-        model = joblib.load(f)
-
-    print(products.columns)
-
-    products['clear_category'] = products['category'].apply(preprocess_text)
-    prediction = model.predict(products['clear_category'])
-    products['category_general'] = prediction    
-
-    products.category = products.category.astype('category')
-    products.category_code = products.category_code.astype('category')
-    products.category_general = products.category_general.astype('category')
-
-    conditions = [(products['store__id'] == 1),
-                  (products['store__id'] == 2), 
-                  (products['store__id'] == 3)]
-    values = ['Ашан', 'Магнит', 'Перекресток']
-    products['shop_rus'] = np.select(conditions, values)
-
-    return products
-
 def join_by_names():
-    products = classification()
+    calssifer = Classifier()
+    products = calssifer.classification_by_category()
+    
     # Очистка имен
     products['name_clear']=products['name'].apply(preprocess_text)
 
     processed_products = DataFrame()
+    #дублируем наименования регионов
+    processed_products['region_rus'] = products['region_rus']
+    #processed_products['price'] = products['price']
+
     # Дублируются имена и очищенные имена для дальнейшей работы
     processed_products['name'] = products['name']
     processed_products['name_clear'] = products['name_clear']
@@ -91,17 +126,17 @@ def join_by_names():
     # Очистка от товаров, встречающихся только в одном магазине и дубликатов
     processed_products = processed_products.dropna(axis=0, how='any')
     processed_products = processed_products.drop_duplicates(subset='name_clear', keep='first')
-   
+
     return processed_products.reset_index()
 
 
-class Diagram():
+class Diagram:
 
     def top_10_max(df):
         top_10 = df.sort_values(by='price', ascending=False).head(10)
-        sns.set_style('darkgrid')
+        sns.set_style('white')
         plt.figure(figsize=(7,5))
-        sns.barplot(x = 'price', y = 'name', data = top_10, palette='rocket')
+        sns.barplot(x = 'price', y = 'name', data = top_10, palette='Blues')
         plt.title('10 САМЫХ ДОРОГИХ ПРОДУКТОВ', fontsize=22)
         plt.xlabel('Стоимость', fontsize=16)
         plt.ylabel('Наименование', fontsize=16)
@@ -113,9 +148,9 @@ class Diagram():
 
     def top_10_min(df):
         top_10 = df.sort_values(by='price', ascending=True).head(10)
-        sns.set_style('darkgrid')
+        sns.set_style('white')
         plt.figure(figsize=(7,5))
-        sns.barplot(x = 'price', y = 'name', data = top_10, palette='rocket')
+        sns.barplot(x = 'price', y = 'name', data = top_10, palette='Blues')
         plt.title('10 САМЫХ ДЕШЕВЫХ ПРОДУКТОВ', fontsize=22)
         plt.xlabel('Стоимость', fontsize=16)
         plt.ylabel('Наименование', fontsize=16)
@@ -129,7 +164,7 @@ class Diagram():
         plt.figure(figsize=(10,5))
         pivot_table = df.pivot_table(index='category_general', columns='shop_rus', values='price', aggfunc='mean')
         plt.title('ТЕПЛОВАЯ КАРТА СРЕДНЕЙ СТОИМОСТИ ТОВАРОВ', fontsize=20)
-        sns.heatmap(pivot_table, cmap='rocket', annot=True, fmt=".1f")
+        sns.heatmap(pivot_table, cmap='Blues', annot=True, fmt=".1f")
         plt.xlabel('Магазин', fontsize=16)
         plt.ylabel('Категория', fontsize=16)
         plt.tick_params(axis='x', labelsize=12)
@@ -142,7 +177,7 @@ class Diagram():
         plt.figure(figsize=(10,5))
         pivot_table = df.pivot_table(index='category_general', columns='shop_rus', values='price', aggfunc=lambda x: x.mode().max())
         plt.title('ТЕПЛОВАЯ КАРТА МОДЫ СТОИМОСТИ ТОВАРОВ', fontsize=20)
-        sns.heatmap(pivot_table, cmap='rocket', annot=True, fmt=".1f")
+        sns.heatmap(pivot_table, cmap='Blues', annot=True, fmt=".1f")
         plt.xlabel('Магазин', fontsize=16)
         plt.ylabel('Категория', fontsize=16)
         plt.tick_params(axis='x', labelsize=12)
@@ -152,8 +187,9 @@ class Diagram():
         return chart_path
 
 def get_products_queryset():
-    return Product.objects.values('id', 'store__id', 'product_id',
-                           'name', 'code', 'category', 'category_code', 'price')
+    # return Product.objects.values('id', 'store__id', 'product_id',
+    #                        'name', 'code', 'category', 'category_code', 'price', 'region__id')
+    return Product.objects.all().values('id', 'store__id', 'product_id', 'name', 'code', 'category', 'category_code', 'price', 'region__id')
 
 if __name__ == '__main__':
 

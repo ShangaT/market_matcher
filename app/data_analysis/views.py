@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 from .models import Product
-from classifier_training.market_analysis import Diagram, join_by_names, classification
+from classifier_training.market_analysis import Classifier, Diagram, join_by_names
 from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.shortcuts import render
@@ -20,24 +20,48 @@ def get_cashed_data():
         cache.set('processed_products', data)
     return DataFrame(data)
 
-def index(request):
-    categories = get_cashed_data()['category_general'].cat.categories.tolist()
-    content = {"categories": categories,
-               "category": 'home'}
-    return render(request, 'data_analysis/index.html', content)
+def visualization(region):
+        classifer = Classifier()
+        df = classifer.classification_by_category()        
+        #categories = df['category_general'].cat.categories.tolist()
+        df_graphics = df[df['region_rus'] == region]
+        Diagram.top_10_max(df_graphics)
+        Diagram.top_10_min(df_graphics)    
+        Diagram.pivot_table_mean(df_graphics)
+        Diagram.pivot_table_mod(df_graphics)
 
-def visualization(request):
-    df = classification()
-    categories = df['category_general'].cat.categories.tolist()
-    Diagram.top_10_max(df)
-    Diagram.top_10_min(df)
-    Diagram.pivot_table_mean(df)
-    Diagram.pivot_table_mod(df)
-    content = {   
-        "categories": categories, 
-        "category": 'Визуализация'
-        }
-    return render(request, 'data_analysis/graphics.html', content)
+class Index:
+
+    def index(request):
+        regions = ['Пермь', 'Москва', 'Санкт-Петербург']
+        #links = ['perm', 'moscow', 'petersburg']
+        content = {"links_name": regions}
+        return render(request, 'data_analysis/index.html', content)
+
+    def index_perm(request):
+        categories = get_cashed_data()['category_general'].cat.categories.tolist()
+        content = {"categories": categories,
+                "category": 'home',
+                "city": "Пермь"}
+        visualization('Пермь')
+        return render(request, 'data_analysis/index_regions.html', content)
+    
+    def index_moscow(request):
+        categories = get_cashed_data()['category_general'].cat.categories.tolist()
+        content = {"categories": categories,
+                "category": 'home',
+                "city": "Москва"}
+        visualization('Москва')
+        return render(request, 'data_analysis/index_regions.html', content)
+    
+    def index_petersburg(request):
+        categories = get_cashed_data()['category_general'].cat.categories.tolist()
+        content = {"categories": categories,
+                "category": 'home',
+                "city": "Санкт-Петербург"}
+        visualization('Санкт-Петербург')
+        return render(request, 'data_analysis/index_regions.html', content)
+
 
 def page_1(request):
     category = 'Бакалея и соусы'
@@ -48,7 +72,7 @@ def page_1(request):
     df.rename(columns={ 
             'name': 'Наименование',
             'price_magnit': 'Цена в магните',
-            'price_perekrestok': 'Цена в пятерочке'
+            'price_perekrestok': 'Цена в пятерочке',
          },  inplace=True)
     content = {   
         "categories": categories, 
