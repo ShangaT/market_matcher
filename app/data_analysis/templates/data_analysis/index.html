@@ -1,15 +1,9 @@
 {% load django_bootstrap5 %}
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Стартовая страница</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    {% bootstrap_css %}
-    {% bootstrap_javascript %}
-</head>
+    {% include 'data_analysis/head.html' with title='Стартовая страница' %}
 <header>        
-    {% include 'data_analysis/header.html' with regions=regions %}    
+    {% include 'data_analysis/header.html' with cities=cities %}    
 </header>
 <body>
     <h1 class="display-5">Market Matcher</h1>

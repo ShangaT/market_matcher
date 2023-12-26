@@ -2,15 +2,9 @@
 {% load django_bootstrap5 %}
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Стартовая страница</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    {% bootstrap_css %}
-    {% bootstrap_javascript %}
-</head>
+    {% include 'data_analysis/head.html' with title=city %}
 <header>        
-    {% include 'data_analysis/header.html' with categories=categories category=category %}    
+    {% include 'data_analysis/header.html' with cities=cities city=city categories=categories category=category %}    
 </header>
 <body>
     {% block content %}
