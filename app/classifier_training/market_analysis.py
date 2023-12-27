@@ -1,4 +1,4 @@
-import sqlite3, string, joblib
+import os, string, joblib
 from data_analysis.models import Product
 #from sqlalchemy import create_engine
 import pandas as pd
@@ -40,6 +40,8 @@ class Classifier:
         return matrix
     
     def classification_by_category(self):
+        nltk.download('stopwords')
+        print("Начало классификации")
         products = read_frame(get_products_queryset())
         #очистка данных
         # products.drop_duplicates(inplace=True)
@@ -67,7 +69,7 @@ class Classifier:
                             (products['region__id'] == 78)]
         values_region = ['Пермь', 'Москва', 'Санкт-Петербург']
         products['region_rus'] = np.select(conditions_region, values_region)
-
+        print("Конец классификации")
         return products
 
 def preprocess_text(input_string):
@@ -81,7 +83,6 @@ def remove_words_with_g(string):
     return modified_string.strip()
 
 def preprocess_text_long(text):
-    nltk.download('stopwords')
     mystem = Mystem() 
     russian_stopwords = stopwords.words("russian")
     russian_stopwords.extend(['лента','ассорт','разм','арт','что', 'это', 'так', 'вот', 'быть', 'как', 'в', '—', 'к', 'на', 'г', 'шт', 'магнит', 'перекрёсток'])
@@ -99,9 +100,11 @@ def preprocess_text_long(text):
 def join_by_names():
     calssifer = Classifier()
     products = calssifer.classification_by_category()
+    print("Начало обработки наименований")
     
     # Очистка имен
     products['name_clear']=products['name'].apply(preprocess_text)
+    print("Конец обработки наименований")
 
     processed_products = DataFrame()
     #дублируем наименования регионов
@@ -116,17 +119,27 @@ def join_by_names():
     processed_products['category_general'] = products[products['name_clear'] == processed_products['name_clear']]['category_general']
     # Делаются отдельные выборки для дальнейшего распределения цен по полям
     products_perekrestok = products[products['shop_rus'] == 'Перекресток'].copy()
+    products_perekrestok['price_perekrestok'] = products_perekrestok['price']
+
     products_magnit = products[products['shop_rus'] == 'Магнит'].copy()
+    products_magnit['price_magnit'] = products_magnit['price']
+
     products_ashan = products[products['shop_rus'] == 'Ашан'].copy()
+    products_ashan['price_auchan'] = products_ashan['price']
     # Добавляются цены в итоговую выборку, в соответвсии с очищенным именем товара и магазином
-    processed_products = processed_products.merge(products_perekrestok[[
-                                                  'name_clear', 'price']], how='left', on='name_clear', suffixes=('_perekrestok', ''))
-    processed_products = processed_products.merge(products_magnit[[
-                                                  'name_clear', 'price']], how='left', on='name_clear', suffixes=('_magnit', '_perekrestok'))
+    processed_products = processed_products.merge(products_perekrestok[['name_clear', 'price_perekrestok']], on='name_clear', how='left')
+    processed_products = processed_products.merge(products_magnit[['name_clear', 'price_magnit']], how='left', on='name_clear',)
+    processed_products = processed_products.merge(products_ashan[['name_clear', 'price_auchan']], how='left', on='name_clear',)
+
+    print(processed_products.columns)
+    print(processed_products[['price_perekrestok', 'price_magnit', 'price_auchan']].sample(10))
+
+    print("Наименования собраны в таблицу")
     # Очистка от товаров, встречающихся только в одном магазине и дубликатов
     processed_products = processed_products.dropna(axis=0, how='any')
     processed_products = processed_products.drop_duplicates(subset='name_clear', keep='first')
 
+    print("Наименования очищены от пустых данных")
     return processed_products.reset_index()
 
 

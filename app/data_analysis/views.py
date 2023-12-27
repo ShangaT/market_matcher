@@ -11,7 +11,7 @@ from pandas import DataFrame
 def get_cashed_data():
     try:
         data = cache.get('processed_products')
-        if DataFrame(data).empty:
+        if data is None or DataFrame(data).empty:
             raise TypeError("Cashed data is empty") 
         print("data cached (index)")
     except TypeError:
@@ -21,13 +21,13 @@ def get_cashed_data():
     return DataFrame(data), data['region_rus'].unique()
 
 def visualization(region):
-        classifer = Classifier()
-        df = classifer.classification_by_category()        
-        df_graphics = df[df['region_rus'] == region]
-        Diagram.top_10_max(df_graphics)
-        Diagram.top_10_min(df_graphics)    
-        Diagram.pivot_table_mean(df_graphics)
-        Diagram.pivot_table_mod(df_graphics)
+    calssifer = Classifier()
+    df = calssifer.classification_by_category()    
+    df_graphics = df[df['region_rus'] == region]
+    Diagram.top_10_max(df_graphics)
+    Diagram.top_10_min(df_graphics)    
+    Diagram.pivot_table_mean(df_graphics)
+    Diagram.pivot_table_mod(df_graphics)
 
 class Index:
 
@@ -55,14 +55,13 @@ class Index:
         data = DataFrame(data[data['category_general'] == category_destination])
         data = DataFrame(data[data['region_rus'] == city_destination])
         print(data.columns)
-        data = data[['name', 'price_magnit', 'price_perekrestok']]
-        # data = data[['name', 'price_magnit', 'price_perekrestok', 'price_auchan']]
+        data = data[['name', 'price_magnit', 'price_perekrestok', 'price_auchan']]
         
         data.rename(columns={ 
                 'name': 'Наименование',
                 'price_magnit': 'Цена в магните',
                 'price_perekrestok': 'Цена в пятерочке',
-                # 'price_auchan': 'Цена в ашане'
+                'price_auchan': 'Цена в ашане'
             },  inplace=True)
         content = {   
             "city": city_destination,
